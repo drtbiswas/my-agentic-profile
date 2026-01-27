@@ -1,6 +1,6 @@
 {
     "name": "@agentic-profile/a2a-mcp-express",
-    "version": "0.6.4",
+    "version": "0.7.0",
     "description": "A2A (Agent-to-Agent) and MCP Express middleware for AI Agents using A2A, MCP, and the Agentic Profile protocols",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -8,12 +8,31 @@
         "prepare": "tsup",
         "build": "tsup",
         "test": "jest",
-        "dev": "tsx --inspect src/example/index.local.ts"
+        "dev": "tsx --inspect test/server/index.local.ts",
+        "auth": "tsx test/authenticate.ts",
+        "chat": "tsx test/hello-chat.ts"
     },
     "exports": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js",
-        "require": "./dist/index.js"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./a2a-service": {
+            "types": "./dist/a2a-service/index.d.ts",
+            "import": "./dist/a2a-service/index.js",
+            "require": "./dist/a2a-service/index.cjs"
+        },
+        "./mcp-service": {
+            "types": "./dist/mcp-service/index.d.ts",
+            "import": "./dist/mcp-service/index.js",
+            "require": "./dist/mcp-service/index.cjs"
+        },
+        "./json-rpc-client": {
+            "types": "./dist/json-rpc/json-rpc-client/index.d.ts",
+            "import": "./dist/json-rpc/json-rpc-client/index.js",
+            "require": "./dist/json-rpc/json-rpc-client/index.cjs"
+        }
     },
     "files": [
         "dist",
@@ -32,12 +51,23 @@
     },
     "homepage": "https://github.com/agentic-profile/agentic-profile-a2a-mcp-express#readme",
     "dependencies": {
-        "@a2a-js/sdk": "^0.3.2",
-        "@agentic-profile/auth": "^0.6.2",
-        "@agentic-profile/common": "^0.6.2",
-        "@modelcontextprotocol/sdk": "^1.17.4",
+        "@agentic-profile/auth": "^0.7.0",
+        "@agentic-profile/common": "^0.7.0",
         "did-resolver": "^4.1.0",
-        "uuid": "^13.0.0"
+        "uuid": "^13.0.0",
+        "loglevel": "^1.9.2"
+    },
+    "peerDependencies": {
+        "@a2a-js/sdk": "^0.3.5",
+        "@modelcontextprotocol/sdk": "^1.17.4"
+    },
+    "peerDependenciesMeta": {
+        "@a2a-js/sdk": {
+            "optional": true
+        },
+        "@modelcontextprotocol/sdk": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
@@ -51,5 +81,5 @@
         "tsup": "^8.4.0",
         "tsx": "^4.20.3"
     },
-    "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"
+    "packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
 }

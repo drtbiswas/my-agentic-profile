@@ -4,23 +4,25 @@ import {
     ExecutionEventBus,
     AgentExecutionEvent
 } from '@a2a-js/sdk/server';
-import { Request } from 'express';
 import { TaskStatus } from '@a2a-js/sdk';
 import { v4 as uuidv4 } from 'uuid';
-import { jrpcErrorAuthRequired, JsonRpcRequest, JsonRpcRequestHandler, JsonRpcResponse } from '../json-rpc/index.js';
+import { jrpcErrorAuthRequired, JsonRpcRequestHandler } from '../json-rpc-service/index.js';
+import { JsonRpcRequest, JsonRpcResponse } from '../json-rpc-client/types.js';
 import { ClientAgentSession } from '@agentic-profile/auth';
+import { JsonRpcRequestContext } from '../json-rpc-service/types.js';
+import log from 'loglevel';
 
-export function createA2ARequestHandler( executor: AgentExecutor, requireAuth: boolean = true ): JsonRpcRequestHandler {
+export function createA2ARequestHandler(executor: AgentExecutor, requireAuth: boolean = true): JsonRpcRequestHandler {
 
-    const handler = async ( jrpcRequest: JsonRpcRequest, session: ClientAgentSession | null, req: Request ): Promise<JsonRpcResponse | null> => {
-        console.log('💼 Handling A2A request with executor...');
-        console.log('💼 Request body:', JSON.stringify(jrpcRequest, null, 4));
+    const handler = async (jrpcRequest: JsonRpcRequest, { session, req }: JsonRpcRequestContext): Promise<JsonRpcResponse | null> => {
+        log.debug('Handling A2A request with executor...');
+        log.debug('Request body:', JSON.stringify(jrpcRequest, null, 4));
 
         // Required authentication
-        if( requireAuth && !session )
-            return jrpcErrorAuthRequired( jrpcRequest.id! );
-        
-        // Create request context from request body
+        if (requireAuth && !session)
+            return jrpcErrorAuthRequired(jrpcRequest.id!);
+
+        // Create A2A request context from request body
         const { params, id } = jrpcRequest;
         const { contextId = uuidv4(), includeAllUpdates = false } = req.body
         const requestContext = {
@@ -37,15 +39,15 @@ export function createA2ARequestHandler( executor: AgentExecutor, requireAuth: b
         const eventBus: ExecutionEventBus = {
             publish: (event: AgentExecutionEvent) => {
                 updates.push(event);
-                console.log('💼 Task event:', event);
+                log.debug('Task event:', event);
             },
             finished: () => {
-                console.log('💼 Task execution finished');
+                log.debug('Task execution finished');
             },
             on: (_eventName: "event" | "finished", _listener: (event: AgentExecutionEvent) => void) => {
                 return eventBus;
             },
-            off: (_eventName: "event" | "finished", _listener: (event: AgentExecutionEvent) => void) => { 
+            off: (_eventName: "event" | "finished", _listener: (event: AgentExecutionEvent) => void) => {
                 return eventBus;
             },
             once: (_eventName: "event" | "finished", _listener: (event: AgentExecutionEvent) => void) => {
@@ -58,16 +60,16 @@ export function createA2ARequestHandler( executor: AgentExecutor, requireAuth: b
 
         // Execute the task using the executor
         await executor.execute(requestContext, eventBus);
-        
+
         // Find the final update
         let result;
-        if( updates.length == 0 ) {
+        if (updates.length == 0) {
             throw new Error('No task updates received from executor');
-        } else if( updates.length == 1 && updates[0].kind === "message" ) {
+        } else if (updates.length == 1 && updates[0].kind === "message") {
             result = updates[0];
         } else {
             const finalUpdate = updates.find(update => update.kind === "status-update" && update.status.state === "completed") || updates[updates.length - 1];
-            if( !finalUpdate ) {
+            if (!finalUpdate) {
                 throw new Error('No task updates received from executor');
             }
 

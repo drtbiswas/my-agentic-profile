@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import log from 'loglevel';
+log.setLevel('debug');
+
 import { app } from './router.js';
 
 const PORT = process.env.PORT || 4004;

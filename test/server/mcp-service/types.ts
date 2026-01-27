@@ -1,4 +1,5 @@
-import { DID } from "@agentic-profile/common/schema";
+import { DID } from "@agentic-profile/common";
+
 
 //
 // Events
@@ -33,7 +34,7 @@ export interface EventListingUpdate {
 export interface EventAttendeeUpdate {
     did: DID,
     rsvp?: RSVP,
-    updated: string |Date
+    updated: string | Date
 }
 
 //=== out ===

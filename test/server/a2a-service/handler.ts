@@ -4,19 +4,18 @@ import {
     RequestContext,
     ExecutionEventBus,
 } from "@a2a-js/sdk/server";
-import { Message /*, TextPart */} from '@a2a-js/sdk';
-import { resolveSession } from '../../a2a/handle-a2a-request.js';
-import { AgentMessageEnvelope } from '@agentic-profile/common';
-import { parseDid } from '../../misc.js';
+import { Message /*, TextPart */ } from '@a2a-js/sdk';
+import { resolveSession } from '../../../src/a2a-service/handle-a2a-request.js';
+import { AgentMessageEnvelope, parseDid } from '@agentic-profile/common';
 
-export class A2AServiceHandler implements AgentExecutor {  
+export class A2AServiceHandler implements AgentExecutor {
     public cancelTask = async (
         taskId: string,
         _eventBus: ExecutionEventBus
     ): Promise<void> => {
         console.log(`VentureExecutor:cancelTask is not supported: ${taskId}`);
     };
-  
+
     async execute(
         requestContext: RequestContext,
         eventBus: ExecutionEventBus
@@ -25,12 +24,12 @@ export class A2AServiceHandler implements AgentExecutor {
         const { userMessage: a2aUserMessage } = requestContext;
         const envelope = a2aUserMessage.metadata?.envelope as AgentMessageEnvelope | undefined;
         const toAgentDid = envelope?.to;
-        if( !toAgentDid )
-            throw new Error("Message envelope is missing recipient id (toAgentDid property)");
+        if (!toAgentDid)
+            throw new Error("Message envelope is missing recipient agent did ('to' property)");
         const { fragment: toFragment } = parseDid(toAgentDid);
-        if( !toFragment )
+        if (!toFragment)
             throw new Error("Invalid toAgentDid, missing fragment: " + toAgentDid);
-        if( toFragment !== "venture" )
+        if (toFragment !== "venture")
             throw new Error("Invalid toAgentDid, fragment is not 'venture': " + toAgentDid);
 
         // get the session

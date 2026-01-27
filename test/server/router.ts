@@ -4,16 +4,15 @@ import type { Request, Response, NextFunction, Application } from 'express';
 import { createDidResolver, InMemoryAgenticProfileStore } from '@agentic-profile/common';
 import { createClientAgentSessionStore } from './store.js';
 
-//import wellKnownDidDocument from './well-known-did-document.json' with { type: 'json' };
 
 // A2A handlers and helpers
 import { A2AServiceHandler, agentCard } from './a2a-service/index.js';
-import { A2AServiceRouter } from '../a2a/router.js';
+import { createA2AServiceRouter } from '../../src/a2a-service/router.js';
 
 // MCP handlers
 import { createPresenceRouter } from "./mcp-service/router.js";
 
-
+// Authentication/session handlers
 const sessionStore = createClientAgentSessionStore();
 const profileStore = new InMemoryAgenticProfileStore();
 const didResolver = createDidResolver({ store: profileStore });
@@ -30,8 +29,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
         'mcp-protocol-version',
-        'Content-Type', 
-        'Authorization', 
+        'Content-Type',
+        'Authorization',
         'WWW-Authenticate',
         'X-Requested-With',
         'Accept',
@@ -52,7 +51,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Logging middleware to log HTTP method and path
 app.use((req, _res, next) => {
-    console.log(`Starting ${req.method} ${req.path}`, req.body);
+    console.log(`Starting ${req.method} ${req.path}`); //, req.body);
     next();
 });
 
@@ -76,8 +75,14 @@ app.get('/.well-known/did.json', (req: Request, res: Response) => {
 */
 
 
-app.use('/a2a/hello', A2AServiceRouter( new A2AServiceHandler(), agentCard, sessionStore, didResolver ));
-app.use('/mcp/presence', createPresenceRouter( sessionStore, didResolver ));
+app.use('/a2a/hello', createA2AServiceRouter({
+    executor: new A2AServiceHandler(),
+    cardBuilder: agentCard,
+    store: sessionStore,
+    didResolver,
+    requireAuth: true
+}));
+app.use('/mcp/presence', createPresenceRouter(sessionStore, didResolver));
 
 // Serve the web interface for non-API routes
 app.get('/', (_req: Request, res: Response) => {

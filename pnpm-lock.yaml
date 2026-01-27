@@ -9,20 +9,23 @@ importers:
   .:
     dependencies:
       '@a2a-js/sdk':
-        specifier: ^0.3.2
-        version: 0.3.4(express@4.21.2)
+        specifier: ^0.3.5
+        version: 0.3.9(express@4.21.2)
       '@agentic-profile/auth':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.7.0
+        version: 0.7.0
       '@agentic-profile/common':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.7.0
+        version: 0.7.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.17.4
         version: 1.21.0
       did-resolver:
         specifier: ^4.1.0
         version: 4.1.0
+      loglevel:
+        specifier: ^1.9.2
+        version: 1.9.2
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -60,20 +63,26 @@ importers:
 
 packages:
 
-  '@a2a-js/sdk@0.3.4':
-    resolution: {integrity: sha512-WXMk/UspvQFxesvb8hXyfPE8d3ibpiRie24Yw/5ruMqNJcdwxjfZ1G0gj6vYE/I9RAZD145CNzedpZA2cLV2JQ==}
+  '@a2a-js/sdk@0.3.9':
+    resolution: {integrity: sha512-GWOSjL/dbkNRETfmLIKqtVV/fm+chPPp0uL5DUDKJlFmVjPCxRS75I6oiIkJeGo3/AM7QjaZTMb003Ia09ibtQ==}
     engines: {node: '>=18'}
     peerDependencies:
+      '@bufbuild/protobuf': ^2.10.2
+      '@grpc/grpc-js': ^1.11.0
       express: ^4.21.2 || ^5.1.0
     peerDependenciesMeta:
+      '@bufbuild/protobuf':
+        optional: true
+      '@grpc/grpc-js':
+        optional: true
       express:
         optional: true
 
-  '@agentic-profile/auth@0.6.2':
-    resolution: {integrity: sha512-hVqADx5soP3c2GAts+intZjzWTqhvzcYGRdRayX3y06ZAb6F78ti2rIVpX+kKgrTcd7Gm26S8WCHRuDAfbYuKQ==}
+  '@agentic-profile/auth@0.7.0':
+    resolution: {integrity: sha512-BU8PNR59msPddq/Fk/bTe8yK1Ae3hxz3Agx7qd/vDZ0S4xdhKCXZ34YV8X4npbn1ViRlkTPUTN7s4eXEoj50Ew==}
 
-  '@agentic-profile/common@0.6.2':
-    resolution: {integrity: sha512-6sd92UPHUyB73ZkYL+gieNDuw0JbFEoQKDON4AowoenHYLJoIPv+jzgehRr098LiodKKgtJRjFJPOfoUc45n5Q==}
+  '@agentic-profile/common@0.7.0':
+    resolution: {integrity: sha512-H9P3krMAGm8atZGgxmGCXVqSQrQMOXlNBoKqtoJyWgKNacNAxFIwCRE3rA5DS9Sl+NBd76IV4eUf4dT5emEPcQ==}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -1407,20 +1416,20 @@ packages:
 
 snapshots:
 
-  '@a2a-js/sdk@0.3.4(express@4.21.2)':
+  '@a2a-js/sdk@0.3.9(express@4.21.2)':
     dependencies:
       uuid: 11.1.0
     optionalDependencies:
       express: 4.21.2
 
-  '@agentic-profile/auth@0.6.2':
+  '@agentic-profile/auth@0.7.0':
     dependencies:
-      '@agentic-profile/common': 0.6.2
+      '@agentic-profile/common': 0.7.0
       '@noble/ed25519': 2.3.0
       did-resolver: 4.1.0
       loglevel: 1.9.2
 
-  '@agentic-profile/common@0.6.2':
+  '@agentic-profile/common@0.7.0':
     dependencies:
       did-resolver: 4.1.0
       loglevel: 1.9.2

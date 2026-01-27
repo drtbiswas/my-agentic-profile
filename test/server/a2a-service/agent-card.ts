@@ -1,10 +1,10 @@
-import { AgentCardProps } from '../../a2a/types.js';
+import { AgentCardProps } from '../../../src/a2a-service/types.js';
 
-export function agentCard({url}: AgentCardProps) {
+export function agentCard({ url }: AgentCardProps) {
     return {
         name: 'Friendly Chatbot',
         description: 'An agent says friendly things',
-        url, 
+        url,
         provider: {
             organization: 'Agent World Congress',
             url: 'https://agentworldcongress.org'
