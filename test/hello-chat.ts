@@ -5,11 +5,12 @@ import { prettyJson, parseDid } from "@agentic-profile/common";
 import { join } from 'node:path';
 import { loadProfileAndKeyring, saveProfile } from './local-files';
 import { createProfile } from './create-profile';
-import { sendJsonRpcRequest } from '../src/json-rpc-client/index';
+import { sendJsonRpcRequest, JsonRpcResponse } from '../src/json-rpc-client/index';
 import { AgenticChallenge, generateAuthToken, ProfileAndKeyring, ProfileAndKeyringResolver } from '@agentic-profile/auth';
 import { createInMemoryAuthTokenCache } from '../src/authenticating-fetch/auth-token.js';
 import { AuthTokenResolver, AuthTokenCache } from '../src/authenticating-fetch/auth-token.js';
 import log from 'loglevel';
+import { Message } from '@a2a-js/sdk';
 
 
 async function main() {
@@ -66,6 +67,7 @@ async function main() {
     console.log('Type your message below. Type "exit" to end the chat.');
 
     try {
+        let contextId;
         while (true) {
             const answer = await rl.question('User: ');
 
@@ -80,6 +82,7 @@ async function main() {
                 method: 'send/message',
                 params: {
                     message: {
+                        contextId,
                         parts: [
                             {
                                 kind: 'text',
@@ -107,9 +110,11 @@ async function main() {
                 if(isVerbose)
                     console.log('Fetch Result:', prettyJson(rpcResult));
 
-                const message = rpcResult.data?.result;
-                const text = message?.parts[0].text;
+                const { text, message } = resolveMessage(rpcResult.data as JsonRpcResponse);
                 console.log(`Agent: ${text}`);
+
+                // if a new context was provided, use it
+                contextId = message?.contextId ?? contextId;
             } catch (err) {
                 console.error('An error occurred:', err);
             }
@@ -119,6 +124,25 @@ async function main() {
     } finally {
         rl.close();
     }
+}
+
+// Try to interpret the result as a message with a text part
+function resolveMessage( { result, error }: JsonRpcResponse ): { text: string, message: Message } {
+    if (error)
+        throw new Error(error.message);
+    if (!result)
+        throw new Error('No result in RPC response');
+    if (result.kind !== 'message')
+        throw new Error('Result is not a message');
+
+    const message = result as Message;
+    if( message.parts.length === 0 )
+        throw new Error('Message has no parts');
+    if( message.parts[0].kind !== 'text' )
+        throw new Error('Message part is not text');
+
+    const text = message.parts[0].text;
+    return { text, message };
 }
 
 main().catch((err) => {

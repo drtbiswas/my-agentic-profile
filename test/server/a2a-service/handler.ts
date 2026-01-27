@@ -4,9 +4,12 @@ import {
     RequestContext,
     ExecutionEventBus,
 } from "@a2a-js/sdk/server";
-import { Message /*, TextPart */ } from '@a2a-js/sdk';
-import { resolveSession } from '../../../src/a2a-service/handle-a2a-request.js';
+import { Message } from '@a2a-js/sdk';
 import { AgentMessageEnvelope, parseDid } from '@agentic-profile/common';
+
+import { resolveSession } from '../../../src/a2a-service/handle-a2a-request.js';
+//import { pickRandomWelcomeMessage } from './random-hello.js';
+import { discoverSynergy } from './discover-synergy.js';
 
 export class A2AServiceHandler implements AgentExecutor {
     public cancelTask = async (
@@ -21,8 +24,12 @@ export class A2AServiceHandler implements AgentExecutor {
         eventBus: ExecutionEventBus
     ): Promise<void> {
         // A2A message and session
-        const { userMessage: a2aUserMessage } = requestContext;
-        const envelope = a2aUserMessage.metadata?.envelope as AgentMessageEnvelope | undefined;
+        const { userMessage } = requestContext;
+        const session = resolveSession(requestContext);
+        const fromAgentDid = session?.agentDid ?? "unknown";  // might or might not include fragment...
+
+        // open envelope for multi-tenancy support
+        const envelope = userMessage.metadata?.envelope as AgentMessageEnvelope | undefined;
         const toAgentDid = envelope?.to;
         if (!toAgentDid)
             throw new Error("Message envelope is missing recipient agent did ('to' property)");
@@ -32,14 +39,10 @@ export class A2AServiceHandler implements AgentExecutor {
         if (toFragment !== "venture")
             throw new Error("Invalid toAgentDid, fragment is not 'venture': " + toAgentDid);
 
-        // get the session
-        const session = resolveSession(requestContext);
-        const text = session ? pickRandomWelcomeMessage() : "Please authenticate, and I will say hello :)";
+        //const text = session ? pickRandomWelcomeMessage() : "Please authenticate, and I will say hello :)";
+        const { text, metadata, contextId } = await discoverSynergy({toAgentDid, fromAgentDid, userMessage});
 
-        const fromAgentDid = session?.agentDid ?? "unknown";  // might or might not include fragment...
-        const contextId = `${toAgentDid}^${fromAgentDid}`;  // e.g. did:web:iamagentic.ai:1#venture^did:web:iamagentic.ai:1#venture
-
-        const a2aAgentMessage: Message = {
+        const agentMessage: Message = {
             kind: "message",
             contextId,
             messageId: uuidv4(),
@@ -50,37 +53,10 @@ export class A2AServiceHandler implements AgentExecutor {
                     text
                 }
             ],
-            //metadata
+            metadata
         };
 
-        eventBus.publish(a2aAgentMessage);
+        eventBus.publish(agentMessage);
         eventBus.finished();
     }
-}
-
-const WELCOME_MESSAGES = [
-    "Hello!", // English
-    "Hola!", // Spanish
-    "Bonjour!", // French
-    "Guten Tag!", // German
-    "Ciao!", // Italian
-    "こんにちは!", // Japanese (Kon'nichiwa)
-    "你好!", // Chinese (Nǐ hǎo)
-    "안녕하세요!", // Korean (Annyeonghaseyo)
-    "Olá!", // Portuguese
-    "Привет!", // Russian (Privet)
-    "مرحبا!", // Arabic (Marhaba)
-    "नमस्ते!", // Hindi (Namaste)
-    "Hej!", // Swedish
-    "Hallo!", // Dutch
-    "Γεια σας!", // Greek (Yia sas)
-    "Merhaba!", // Turkish
-    "Witaj!", // Polish
-    "Hei!", // Finnish
-    "Ahoj!", // Czech
-    "Здравейте!", // Bulgarian (Zdraveĭte)
-]
-
-function pickRandomWelcomeMessage(): string {
-    return WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)];
 }
