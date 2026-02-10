@@ -1,6 +1,6 @@
 {
     "name": "@agentic-profile/a2a-mcp-express",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "description": "A2A (Agent-to-Agent) and MCP Express middleware for AI Agents using A2A, MCP, and the Agentic Profile protocols",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -58,8 +58,8 @@
         "uuid": "^13.0.0"
     },
     "peerDependencies": {
-        "@a2a-js/sdk": "^0.3.5",
-        "@modelcontextprotocol/sdk": "^1.17.4"
+        "@a2a-js/sdk": "^0.3.10",
+        "@modelcontextprotocol/sdk": "^1.26.0"
     },
     "peerDependenciesMeta": {
         "@a2a-js/sdk": {
@@ -70,9 +70,9 @@
         }
     },
     "devDependencies": {
-        "@a2a-js/sdk": "^0.3.5",
+        "@a2a-js/sdk": "^0.3.10",
         "@google/genai": "^1.38.0",
-        "@modelcontextprotocol/sdk": "^1.17.4",
+        "@modelcontextprotocol/sdk": "^1.26.0",
         "@types/cors": "^2.8.19",
         "@types/express": "^4.17.21",
         "@types/jest": "^29.5.14",
@@ -84,5 +84,5 @@
         "tsup": "^8.4.0",
         "tsx": "^4.20.3"
     },
-    "packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
+    "packageManager": "pnpm@10.29.2+sha512.bef43fa759d91fd2da4b319a5a0d13ef7a45bb985a3d7342058470f9d2051a3ba8674e629672654686ef9443ad13a82da2beb9eeb3e0221c87b8154fff9d74b8"
 }
