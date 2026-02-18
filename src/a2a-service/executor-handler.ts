@@ -12,9 +12,9 @@ import { ClientAgentSession } from '@agentic-profile/auth';
 import { JsonRpcRequestContext } from '../json-rpc-service/types.js';
 import log from 'loglevel';
 
-export function createA2ARequestHandler(executor: AgentExecutor, requireAuth: boolean = true): JsonRpcRequestHandler {
+export function createA2AExecutorHandler(executor: AgentExecutor, requireAuth: boolean = true): JsonRpcRequestHandler {
 
-    const handler = async (jrpcRequest: JsonRpcRequest, { session, req }: JsonRpcRequestContext): Promise<JsonRpcResponse | null> => {
+    const handler = async (jrpcRequest: JsonRpcRequest, { session, req }: JsonRpcRequestContext): Promise<JsonRpcResponse> => {
         log.debug('Handling A2A request with executor...');
         log.debug('Request body:', JSON.stringify(jrpcRequest, null, 4));
 

@@ -1,4 +1,4 @@
-export * from './handle-a2a-request.js';
+export * from './executor-handler.js';
 export * from './router.js';
 export * from './types.js';
 export * from '../json-rpc-service/index.js';

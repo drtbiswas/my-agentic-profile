@@ -4,10 +4,10 @@ import type { Request, Response, NextFunction, Application } from 'express';
 import { createDidResolver, InMemoryAgenticProfileStore } from '@agentic-profile/common';
 import { createClientAgentSessionStore } from './store.js';
 
-
 // A2A handlers and helpers
-import { A2AServiceHandler, agentCard } from './a2a-service/index.js';
-import { createA2AServiceRouter } from '../../src/a2a-service/router.js';
+import { handleA2ALiteRequest } from './a2a-service/handler.js';
+import { agentCard } from './a2a-service/agent-card.js';
+import { createA2ALiteRouter } from '../../src/a2a-service/router.js';
 
 // MCP handlers
 import { createPresenceRouter } from "./mcp-service/router.js";
@@ -74,9 +74,8 @@ app.get('/.well-known/did.json', (req: Request, res: Response) => {
 });
 */
 
-
-app.use('/a2a/hello', createA2AServiceRouter({
-    executor: new A2AServiceHandler(),
+app.use('/a2a/hello', createA2ALiteRouter({
+    jrpcRequestHandler: handleA2ALiteRequest,
     cardBuilder: agentCard,
     store: sessionStore,
     didResolver,

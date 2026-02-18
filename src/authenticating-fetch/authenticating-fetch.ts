@@ -28,7 +28,7 @@ export async function authenticatingFetch( url: string, authContext: Authenticat
     if( body )
         requestInit.body = body instanceof Function ? await body() : body;
 
-    const authToken = await authTokenCache?.getAuthToken(url);
+    const authToken = await authTokenCache?.getAuthToken();
     const result = await doFetch({ url, requestInit, authToken, fetchImpl });
 
     // Need to retry with auth?
@@ -36,7 +36,7 @@ export async function authenticatingFetch( url: string, authContext: Authenticat
         return result; // Nope
 
     if (authToken)
-        await authTokenCache?.deleteAuthToken(url); // authToken failed, so forget it
+        await authTokenCache?.deleteAuthToken(); // authToken failed, so forget it
 
     const agenticChallenge = parseChallengeFromWwwAuthenticate(result.headers?.get('WWW-Authenticate'), url);
     const newAuthToken = await authTokenResolver(agenticChallenge);
@@ -53,7 +53,7 @@ export async function authenticatingFetch( url: string, authContext: Authenticat
     });
 
     if (retryResult.ok)
-        await authTokenCache?.cacheAuthToken(url, newAuthToken);
+        await authTokenCache?.cacheAuthToken(newAuthToken);
 
     return retryResult;
 };

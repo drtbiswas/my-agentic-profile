@@ -5,7 +5,7 @@ import { prettyJson, parseDid } from "@agentic-profile/common";
 import { join } from 'node:path';
 import { loadProfileAndKeyring, saveProfile } from './local-files';
 import { createProfile } from './create-profile';
-import { sendJsonRpcRequest, JsonRpcResponse } from '../src/json-rpc-client/index';
+import { fetchJsonRpc, JsonRpcResponse } from '../src/json-rpc-client/index';
 import { AgenticChallenge, generateAuthToken, ProfileAndKeyring, ProfileAndKeyringResolver } from '@agentic-profile/auth';
 import { createInMemoryAuthTokenCache } from '../src/authenticating-fetch/auth-token.js';
 import { AuthTokenResolver, AuthTokenCache } from '../src/authenticating-fetch/auth-token.js';
@@ -79,7 +79,7 @@ async function main() {
             const rpcBody = {
                 jsonrpc: '2.0',
                 id: Date.now().toString(),
-                method: 'send/message',
+                method: 'message/send',
                 params: {
                     message: {
                         contextId,
@@ -102,7 +102,7 @@ async function main() {
                 console.log('RPC Body:', prettyJson(rpcBody));
 
             try {
-                const rpcResult = await sendJsonRpcRequest(
+                const rpcResult = await fetchJsonRpc(
                     host,
                     rpcBody,
                     { authTokenResolver, authTokenCache }

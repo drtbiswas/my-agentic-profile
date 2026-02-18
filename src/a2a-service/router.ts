@@ -4,9 +4,10 @@ import { AgentExecutor } from '@a2a-js/sdk/server';
 import { ClientAgentSessionStore } from '@agentic-profile/auth';
 import { AgentCardBuilder } from './types.js';
 import { createAuthenticatingExpressRequestHandler } from '../json-rpc-service/auth.js';
-import { createA2ARequestHandler } from './handle-a2a-request.js';
+import { createA2AExecutorHandler } from './executor-handler.js';
+import { JsonRpcRequestHandler } from '../json-rpc-service/index.js';
 
-export type A2AServiceRouterParams = {
+export type A2AExecutorRouterParams = {
     executor: AgentExecutor;
     cardBuilder: AgentCardBuilder;
     store: ClientAgentSessionStore;
@@ -14,12 +15,11 @@ export type A2AServiceRouterParams = {
     requireAuth?: boolean;
 }
 
-
-export function createA2AServiceRouter({ executor, cardBuilder, store, didResolver, requireAuth = true}: A2AServiceRouterParams): Router {
+export function createA2AExecutorRouter({ executor, cardBuilder, store, didResolver, requireAuth = true}: A2AExecutorRouterParams): Router {
     const router = Router();
 
     const authenticatingRequestHandler = createAuthenticatingExpressRequestHandler(store, didResolver);
-    const a2aRequestHandler = createA2ARequestHandler(executor, requireAuth);
+    const a2aRequestHandler = createA2AExecutorHandler(executor, requireAuth);
 
     router.get('/agent-card.json', async (req: Request, res: Response) => {
         const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace(/\/agent-card\.json$/, '');
@@ -30,6 +30,33 @@ export function createA2AServiceRouter({ executor, cardBuilder, store, didResolv
 
     router.post('/', async (req: Request, res: Response) => {
         authenticatingRequestHandler(req, res, a2aRequestHandler);
+    });
+
+    return router;
+}
+
+export type A2ALiteRouterParams = {
+    jrpcRequestHandler: JsonRpcRequestHandler;
+    cardBuilder: AgentCardBuilder;
+    store: ClientAgentSessionStore;
+    didResolver: Resolver;
+    requireAuth?: boolean;
+}
+
+export function createA2ALiteRouter({ jrpcRequestHandler, cardBuilder, store, didResolver}: A2ALiteRouterParams): Router {
+    const router = Router();
+
+    const authenticatingRequestHandler = createAuthenticatingExpressRequestHandler(store, didResolver);
+
+    router.get('/agent-card.json', async (req: Request, res: Response) => {
+        const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace(/\/agent-card\.json$/, '');
+        const agentCard = cardBuilder({ url });
+
+        res.json(agentCard);
+    });
+
+    router.post('/', async (req: Request, res: Response) => {
+        authenticatingRequestHandler(req, res, jrpcRequestHandler);
     });
 
     return router;

@@ -1,5 +1,5 @@
 import { Router, Request, Response, type Router as ExpressRouter } from 'express';
-import { jrpcResult, createAuthenticatingExpressRequestHandler } from '../json-rpc-service/index.js';
+import { jrpcResult, createAuthenticatingExpressRequestHandler, jrpcError } from '../json-rpc-service/index.js';
 import { ClientAgentSessionStore } from '@agentic-profile/auth';
 import { handleMcpGet, handleMcpDelete } from './mcp-stream.js';
 import { DEFAULT_MCP_INITIALIZE_RESPONSE } from './misc.js';
@@ -22,7 +22,7 @@ type InitializeResponse = {
     };
 }
 
-type MethodHandler = (req: JsonRpcRequest, context: JsonRpcRequestContext) => Promise<JsonRpcResponse | null>;
+type MethodHandler = (req: JsonRpcRequest, context: JsonRpcRequestContext) => Promise<JsonRpcResponse>;
 
 type Handlers = {
     toolsCall?: MethodHandler;
@@ -48,7 +48,7 @@ export function createMcpServiceRouter({ handlers, initializeResponse, lists, st
     const authenticatingRequestHandler = createAuthenticatingExpressRequestHandler(store, didResolver);
 
     async function handleMcpRequest(req: Request, res: Response) {
-        await authenticatingRequestHandler(req, res, async (jrpcRequest: JsonRpcRequest, context: JsonRpcRequestContext): Promise<JsonRpcResponse | null> => {
+        await authenticatingRequestHandler(req, res, async (jrpcRequest: JsonRpcRequest, context: JsonRpcRequestContext): Promise<JsonRpcResponse> => {
             const requestId = jrpcRequest.id!;
             switch (jrpcRequest.method) {
                 case 'initialize':
@@ -67,9 +67,10 @@ export function createMcpServiceRouter({ handlers, initializeResponse, lists, st
                 case 'tools/list':
                     return handlers?.toolsList ? await handlers.toolsList(jrpcRequest, context) : jrpcResult(requestId, { tools: lists?.tools ?? [] });
                 case 'tools/call':
-                    return handlers?.toolsCall ? await handlers.toolsCall(jrpcRequest, context) : null;
+                    if (handlers?.toolsCall)
+                        return await handlers.toolsCall(jrpcRequest, context);
                 default:
-                    return null;
+                    return jrpcError(requestId, -32600, `Invalid method: ${jrpcRequest.method}`);
             }
         });
     };

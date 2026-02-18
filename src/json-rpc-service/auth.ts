@@ -18,7 +18,7 @@ import log from 'loglevel';
 export function createAuthenticatingExpressRequestHandler(clientAgentSessionStore: ClientAgentSessionStore, didResolver: Resolver): ExpressRequestHandler {
     return async (req: Request, res: Response, handleJsonRpcRequest: JsonRpcRequestHandler) => {
         try {
-            log.trace('🔍 Authenticating request', typeof req.body, prettyJson(req.body));
+            log.trace('🔍 Authenticating request', typeof req.body, req.url, prettyJson(req.body));
 
             const jrpcRequest = req.body as JsonRpcRequest;
             const { id, method } = jrpcRequest;
@@ -37,36 +37,44 @@ export function createAuthenticatingExpressRequestHandler(clientAgentSessionStor
             if (authorization)
                 session = await handleAuthorization(authorization, clientAgentSessionStore, didResolver) ?? undefined;
 
-            const result = await handleJsonRpcRequest(jrpcRequest, { session, req });
-            if (result) {
-                // Error?
-                if ('error' in result) {
-                    const { error } = result as JsonRpcResponse;
-                    if (error?.code === AGENTIC_AUTH_REQUIRED_JSON_RPC_CODE) {
-                        log.debug('🔍 Auth required, creating challenge');
-                        const challenge = await createChallenge(clientAgentSessionStore);
+            const jrpcResponse = await handleJsonRpcRequest(jrpcRequest, { session, req });
+            if (!jrpcResponse) { // quick sanity check, should never happen ;)
+                const json = prettyJson(jrpcRequest);
+                log.error(`handleJsonRpcRequest() returned null for ${req.url}: ${json}`);
+                res.status(400).json(jrpcError(id!, -32601, `JSON RPC handler returned null ${method} not found`));
+                return;
+            }
 
-                        res.status(401)
-                            .set('WWW-Authenticate', `Agentic ${b64u.objectToBase64Url(challenge)}`)
-                            .set('Access-Control-Expose-Headers', 'WWW-Authenticate')
-                            .json(result);
-                        return;
-                    }
+            if ('result' in jrpcResponse) {
+                log.trace('🔍 Success result:', req.url, prettyJson(jrpcResponse));
+                res.json(jrpcResponse); // Return response as-is with 200 status
+                return;
+            }
 
-                    // Other errors...
-                    const httpStatus = jsonRpcErrorCodeToHttpStatus(error?.code || 0);
-                    log.debug(`🔍 Error code ${error?.code} => HTTP ${httpStatus}:`, prettyJson(result));
-                    res.status(httpStatus).json(result);
+            // Error?
+            if ('error' in jrpcResponse) {
+                const { error } = jrpcResponse as JsonRpcResponse;
+                if (error?.code === AGENTIC_AUTH_REQUIRED_JSON_RPC_CODE) {
+                    log.debug('🔍 Auth required, creating challenge');
+                    const challenge = await createChallenge(clientAgentSessionStore);
+
+                    res.status(401)
+                        .set('WWW-Authenticate', `Agentic ${b64u.objectToBase64Url(challenge)}`)
+                        .set('Access-Control-Expose-Headers', 'WWW-Authenticate')
+                        .json(jrpcResponse);
                     return;
                 }
 
-                // Success response
-                log.debug('🔍 Success result:', prettyJson(result));
-                res.json(result); // Return response as-is with 200 status
-            } else {
-                log.debug('🔍 Result:', prettyJson(result));
-                res.status(400).json(jrpcError(id!, -32601, `Method ${method} not found`));
+                // Other errors...
+                const httpStatus = jsonRpcErrorCodeToHttpStatus(error?.code || 0);
+                log.debug(`🔍 Error code ${error?.code} => HTTP ${httpStatus}:`, prettyJson(jrpcResponse));
+                res.status(httpStatus).json(jrpcResponse);
+                return;
             }
+
+            // Success!
+            log.trace('🔍 Success result:', prettyJson(jrpcResponse));
+            res.json(jrpcResponse); // Return response as-is with 200 status
         } catch (error) {
             log.error('MCP method handler error:', prettyJson(error));
             res.status(500).json(jrpcError(req.body.id || 'unknown', -32603, `Internal error: ${error}`));

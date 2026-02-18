@@ -1,11 +1,11 @@
 import { AuthenticatingFetchContext } from '../authenticating-fetch/authenticating-fetch.js';
-import { FetchResult, postJson } from '../authenticating-fetch/json.js';
+import { JsonFetchResult, fetchJson } from '../authenticating-fetch/json.js';
 
 type RpcBody = string | object;
 
-export async function sendJsonRpcRequest( url: string, rpcBody: RpcBody, authContext: AuthenticatingFetchContext, requestInit?: RequestInit ): Promise<FetchResult> {
+export async function fetchJsonRpc( url: string, rpcBody: RpcBody, authContext: AuthenticatingFetchContext, requestInit?: RequestInit ): Promise<JsonFetchResult> {
     const body = asJsonRpcBody(rpcBody);
-    return await postJson(url, body, authContext, requestInit);
+    return await fetchJson(url, "POST", body, authContext, requestInit);
 }
 
 // ensure required JSON RPC headers are present
