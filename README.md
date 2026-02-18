@@ -7,18 +7,19 @@ features and see the data flowing between clients and the server.
 
 ## Prerequisites
 
-- Node.js v22.10.0 or higher
-- npm v10.28.1 or higher    
-- A Google AI Studio API key from https://aistudio.google.com/api-keys
+1. [Install Node](https://nodejs.org/en/download) v22.10.0 or higher  
+2. A Google AI Studio API key from https://aistudio.google.com/api-keys
    Add this key to the .env file, such as
 
     ```
     GEMINI_API_KEY=your-api-key
     ```
-- Git
+3. [Install Git](https://github.com/git-guides/install-git)
 
 
 ## Install this repo for local testing
+
+Open a terminal window and execute:
 
 ```bash
 git clone git@github.com:agentic-profile/agentic-profile-a2a-mcp-express.git
