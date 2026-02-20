@@ -42,14 +42,14 @@
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/agentic-profile/agentic-profile-a2a-mcp-express.git"
+        "url": "git+https://github.com/drtbiswas/my-agentic-profile.git"
     },
-    "author": "Mike Prince",
+    "author": "Tamal Biswas",
     "license": "Apache-2",
     "bugs": {
-        "url": "https://github.com/agentic-profile/agentic-profile-a2a-mcp-express/issues"
+        "url": "https://github.com/drtbiswas/my-agentic-profile/issues"
     },
-    "homepage": "https://github.com/agentic-profile/agentic-profile-a2a-mcp-express#readme",
+    "homepage": "https://github.com/drtbiswas/my-agentic-profile#readme",
     "dependencies": {
         "@agentic-profile/auth": "^0.7.0",
         "@agentic-profile/common": "^0.7.0",
